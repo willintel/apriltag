@@ -89,9 +89,18 @@ find_library(APRILTAG_LIB apriltag
 add_custom_command(OUTPUT apriltag_pywrap.o
     COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS} ${PY_CFLAGS} -I${PROJECT_BINARY_DIR} -c -o apriltag_pywrap.o ${CMAKE_SOURCE_DIR}/apriltag_pywrap.c
     DEPENDS ${CMAKE_SOURCE_DIR}/apriltag_pywrap.c ${PROJECT_BINARY_DIR}/apriltag_detect.docstring.h ${PROJECT_BINARY_DIR}/apriltag_py_type.docstring.h)
-add_custom_command(OUTPUT apriltag${PY_EXT_SUFFIX}
-    COMMAND ${PY_LINKER} ${PY_LDFLAGS} -Wl -rpath lib apriltag_pywrap.o ${APRILTAG_LIB} -o apriltag${PY_EXT_SUFFIX}
-    DEPENDS ${PROJECT_NAME} apriltag_pywrap.o)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_custom_command(OUTPUT apriltag${PY_EXT_SUFFIX}
+        COMMAND ${PY_LINKER} ${PY_LDFLAGS} -Wl -rpath lib apriltag_pywrap.o ${APRILTAG_LIB} -o apriltag${PY_EXT_SUFFIX}
+        DEPENDS ${PROJECT_NAME} apriltag_pywrap.o)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_custom_command(OUTPUT apriltag${PY_EXT_SUFFIX}
+        COMMAND ${PY_LINKER} ${PY_LDFLAGS} -Wl,-rpath=lib apriltag_pywrap.o ${APRILTAG_LIB} -o apriltag${PY_EXT_SUFFIX}
+        DEPENDS ${PROJECT_NAME} apriltag_pywrap.o)
+else()
+
+endif()
 add_custom_target(apriltag_python ALL
     DEPENDS apriltag${PY_EXT_SUFFIX})
 
